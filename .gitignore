@@ -20,7 +20,7 @@ target/
 *.ipr
 *.class
 out/
-
+logs/
 
 
 ### NetBeans ###
