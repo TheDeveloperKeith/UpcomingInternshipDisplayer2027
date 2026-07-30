@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternshipTracker 2027</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f4f5f7;
+            --card-bg: #ffffff;
+            --text-dark: #1b2434;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --accent: #b8862f;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text-dark);
+        }
+
+        .page {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin: 0 0 4px;
+            letter-spacing: -0.01em;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin: 0 0 32px;
+        }
+
+        #rows {
+            display: flex;
+            flex-direction: column;
+            gap: 34px;
+        }
+
+        .row-section {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .row-header {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .row-header h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 0.01em;
+        }
+
+        .row-header .row-count {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .row-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 22px;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        .badge {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.02em;
+        }
+
+        .card h3 {
+            margin: 0 0 4px;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+        .card a.company-link {
+            display: inline-block;
+            font-size: 0.83rem;
+            color: var(--accent);
+            text-decoration: none;
+            margin-bottom: 14px;
+            border-bottom: 1px solid transparent;
+            word-break: break-all;
+        }
+
+        .card a.company-link:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 0 0;
+            border-top: 1px solid var(--border);
+            font-size: 0.88rem;
+        }
+
+        .info-row .label {
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .info-row .value {
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .empty-row {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <h1>My Internship Applications</h1>
+    <p class="subtitle">Tracking active applications by tech stack</p>
+    <div id="rows"></div>
+</div>
+
+<script>
+    // ---- Company reference data ----------------------------------------
+    // Keyed by a normalized (uppercase, letters-only) company name so matching
+    // is forgiving of "Goldman Sachs" vs "GoldmanSachs" vs "goldman sachs", etc.
+    // "url" points to each company's student/internship page where one exists;
+    // otherwise it falls back to the general careers site.
+    const COMPANY_ORDER = [
+        "GOLDMANSACHS", "JPMORGAN", "BANKOFAMERICA",
+        "JANESTREET", "NVIDIA", "AMD",
+        "NETFLIX", "TWITCH", "VERCEL",
+        "GOOGLE", "MICROSOFT", "AMAZON"
+    ];
+
+    const COMPANY_INFO = {
+        GOLDMANSACHS:   { url: "https://www.goldmansachs.com/careers/students", initials: "GS",   color: "#00365f" },
+        JPMORGAN:       { url: "https://careers.jpmorgan.com/students/programs", initials: "JPM", color: "#0a2f5c" },
+        BANKOFAMERICA:  { url: "https://careers.bankofamerica.com/en-us/students/campus-experience", initials: "BofA", color: "#9b1b30" },
+        JANESTREET:     { url: "https://www.janestreet.com/join-jane-street/internships/", initials: "JS", color: "#1c1c1c" },
+        NVIDIA:         { url: "https://www.nvidia.com/en-us/about-nvidia/careers/university-recruiting/", initials: "NV", color: "#5c8f00" },
+        AMD:            { url: "https://careers.amd.com/students", initials: "AMD", color: "#c8102e" },
+        NETFLIX:        { url: "https://jobs.netflix.com/careers/internships", initials: "NF", color: "#b1060f" },
+        TWITCH:         { url: "https://careers.twitch.com/en/early-career/", initials: "TW", color: "#6441a5" },
+        VERCEL:         { url: "https://vercel.com/careers", initials: "VC", color: "#171717" },
+        GOOGLE:         { url: "https://www.google.com/about/careers/applications/internships", initials: "G", color: "#3367d6" },
+        MICROSOFT:      { url: "https://careers.microsoft.com/students/", initials: "MS", color: "#00a4ef" },
+        AMAZON:         { url: "https://www.amazon.jobs/teams/internships-for-students", initials: "AMZ", color: "#e07a00" }
+    };
+
+    // ---- Row grouping by tech stack --------------------------------------
+    const ROW_ORDER = ["JAVA", "CPP", "JSTS", "GENERAL"];
+    const ROW_LABELS = {
+        JAVA: "Java",
+        CPP: "C++",
+        JSTS: "JavaScript / TypeScript",
+        GENERAL: "General / All-Around",
+        OTHER: "Other / Unrecognized"
+    };
+
+    function normalize(name) {
+        return (name || "").toUpperCase().replace(/[^A-Z]/g, "");
+    }
+
+    // Looks up a field on an item regardless of exact key casing. APIs backed by
+    // SQL databases often lowercase unquoted column names (e.g. "programmingLanguage"
+    // becomes "programminglanguage" in the actual JSON), so this avoids silently
+    // losing every row over a casing mismatch.
+    function getField(item, fieldName) {
+        if (!item) return undefined;
+        const target = fieldName.toLowerCase();
+        const key = Object.keys(item).find(k => k.toLowerCase() === target);
+        return key ? item[key] : undefined;
+    }
+
+    // Forgiving classifier: matches common spellings/casings of each stack.
+    function classifyLanguage(lang) {
+        const s = (lang || "").toLowerCase();
+        if (s.includes("c++") || s.includes("cpp")) return "CPP";
+        if (s.includes("javascript") || s.includes("typescript") || /\bjs\b/.test(s) || /\bts\b/.test(s)) return "JSTS";
+        if (s.includes("java")) return "JAVA";
+        if (s.includes("general") || s.includes("all")) return "GENERAL";
+        return "OTHER";
+    }
+
+    function sortByCompanyOrder(items) {
+        return [...items].sort((a, b) => {
+            const ai = COMPANY_ORDER.indexOf(normalize(getField(a, "internships")));
+            const bi = COMPANY_ORDER.indexOf(normalize(getField(b, "internships")));
+            const aRank = ai === -1 ? COMPANY_ORDER.length : ai;
+            const bRank = bi === -1 ? COMPANY_ORDER.length : bi;
+            return aRank - bRank;
+        });
+    }
+
+    // Renders a company's display name in Title Case (your DB stores it in
+    // all caps, e.g. "GOLDMAN SACHS" -> "Goldman Sachs").
+    function titleCase(str) {
+        return (str || "")
+            .toLowerCase()
+            .replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function buildCard(item) {
+        const companyName = getField(item, "internships");
+        const info = COMPANY_INFO[normalize(companyName)];
+        const badgeColor = info ? info.color : "#4b5563";
+        const initials = info ? info.initials : (companyName || "?").slice(0, 2).toUpperCase();
+        const rawLanguage = getField(item, "programmingLanguage");
+
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+      <div class="badge" style="background:${badgeColor}">${initials}</div>
+      <h3>${titleCase(companyName) || "(unknown)"}</h3>
+      ${info ? `<a class="company-link" href="${info.url}" target="_blank" rel="noopener noreferrer">${info.url.replace("https://www.", "").replace("https://", "")}</a>` : ""}
+      ${!info || classifyLanguage(rawLanguage) === "OTHER" ? `<div class="info-row"><span class="label">Raw language</span><span class="value">${rawLanguage || "(missing)"}</span></div>` : ""}
+    `;
+        return card;
+    }
+
+    function renderItems(items) {
+        const container = document.getElementById("rows");
+        container.innerHTML = "";
+
+        if (!items || items.length === 0) {
+            container.innerHTML = '<p class="empty-row">No applications yet.</p>';
+            return;
+        }
+
+        // Group items by tech stack
+        const groups = { JAVA: [], CPP: [], JSTS: [], GENERAL: [], OTHER: [] };
+        items.forEach(item => {
+            const key = classifyLanguage(getField(item, "programmingLanguage"));
+            groups[key].push(item);
+        });
+
+        const rowsToRender = groups.OTHER.length > 0 ? [...ROW_ORDER, "OTHER"] : ROW_ORDER;
+
+        rowsToRender.forEach(rowKey => {
+            const rowItems = sortByCompanyOrder(groups[rowKey]);
+
+            const section = document.createElement("section");
+            section.className = "row-section";
+
+            const header = document.createElement("div");
+            header.className = "row-header";
+            header.innerHTML = `<h2>${ROW_LABELS[rowKey]}</h2><span class="row-count">${rowItems.length} ${rowItems.length === 1 ? "company" : "companies"}</span>`;
+            section.appendChild(header);
+
+            const grid = document.createElement("div");
+            grid.className = "row-grid";
+
+            if (rowItems.length === 0) {
+                grid.innerHTML = '<p class="empty-row">No applications in this category yet.</p>';
+            } else {
+                rowItems.forEach(item => grid.appendChild(buildCard(item)));
+            }
+
+            section.appendChild(grid);
+            container.appendChild(section);
+        });
+    }
+
+    // Fallback demo data so the page renders something visible before /api/items
+    // is wired up on your backend. Real data from the fetch below will replace this.
+    const DEMO_ITEMS = [
+        { internships: "GOLDMAN SACHS", programmingLanguage: "Java" },
+        { internships: "JPMORGAN", programmingLanguage: "Java" },
+        { internships: "BANK OF AMERICA", programmingLanguage: "Java" },
+        { internships: "JANESTREET", programmingLanguage: "C++" },
+        { internships: "NVIDIA", programmingLanguage: "C++" },
+        { internships: "AMD", programmingLanguage: "C++" },
+        { internships: "NETFLIX", programmingLanguage: "JavaScript/TypeScript" },
+        { internships: "TWITCH", programmingLanguage: "JavaScript/TypeScript" },
+        { internships: "VERCEL", programmingLanguage: "JavaScript/TypeScript" },
+        { internships: "GOOGLE", programmingLanguage: "General" },
+        { internships: "MICROSOFT", programmingLanguage: "General" },
+        { internships: "AMAZON", programmingLanguage: "General" }
+    ];
+
+    fetch("/api/items")
+        .then(res => {
+            if (!res.ok) throw new Error("API not available");
+            return res.json();
+        })
+        .then(items => renderItems(items))
+        .catch(() => renderItems(DEMO_ITEMS));
+</script>
+
+</body>
+</html>
