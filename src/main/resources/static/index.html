@@ -164,11 +164,7 @@
 </div>
 
 <script>
-    // ---- Company reference data ----------------------------------------
-    // Keyed by a normalized (uppercase, letters-only) company name so matching
-    // is forgiving of "Goldman Sachs" vs "GoldmanSachs" vs "goldman sachs", etc.
-    // "url" points to each company's student/internship page where one exists;
-    // otherwise it falls back to the general careers site.
+    
     const COMPANY_ORDER = [
         "GOLDMANSACHS", "JPMORGAN", "BANKOFAMERICA",
         "JANESTREET", "NVIDIA", "AMD",
@@ -205,10 +201,7 @@
         return (name || "").toUpperCase().replace(/[^A-Z]/g, "");
     }
 
-    // Looks up a field on an item regardless of exact key casing. APIs backed by
-    // SQL databases often lowercase unquoted column names (e.g. "programmingLanguage"
-    // becomes "programminglanguage" in the actual JSON), so this avoids silently
-    // losing every row over a casing mismatch.
+    
     function getField(item, fieldName) {
         if (!item) return undefined;
         const target = fieldName.toLowerCase();
@@ -216,7 +209,7 @@
         return key ? item[key] : undefined;
     }
 
-    // Forgiving classifier: matches common spellings/casings of each stack.
+    
     function classifyLanguage(lang) {
         const s = (lang || "").toLowerCase();
         if (s.includes("c++") || s.includes("cpp")) return "CPP";
