@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>io.github.TheDeveloperKeith</groupId>
-    <artifactId>InternshipTracker2027</artifactId>
+    <artifactId>internshiptracker</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>InternshipTracker2027</name>
     <description>InternshipTracker2027</description>

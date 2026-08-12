@@ -1,0 +1,58 @@
+
+  name: upcominginternshipdisplayer2027
+
+  services:
+    app:
+      build:
+        context: .
+        dockerfile: Dockerfile
+
+      depends_on:
+        mysqldb:
+          condition: service_healthy
+
+      environment:
+        DB_HOST: ${DB_HOST}
+        DB_PORT: ${DB_PORT}
+        DB_NAME: ${DB_NAME}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        SPRING_PROFILES_ACTIVE: docker
+
+      networks:
+        - backend-network
+
+      ports:
+        - "8081:8080"
+
+    mysqldb:
+      image: mysql:8.0
+
+      environment:
+        MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        MYSQL_DATABASE: ${MYSQL_DATABASE}
+
+      healthcheck:
+        test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+        start_period: 30s
+
+      networks:
+        - backend-network
+
+      volumes:
+        - mysql-data:/var/lib/mysql
+        - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
+
+  networks:
+    backend-network:
+      name: upcominginternshipdisplayer2027_backend-network
+      driver: bridge
+
+  volumes:
+    mysql-data:
+      name: upcominginternshipdisplayer2027_mysql-data
+
+

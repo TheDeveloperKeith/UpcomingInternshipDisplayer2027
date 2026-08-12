@@ -1,14 +1,16 @@
 package io.github.thedeveloperkeith.internshiptracker2027;
 
 import jakarta.persistence.*;
+import jakarta.persistence.GeneratedValue;
 
 @Entity
 @Table(name = "internshipwebsites")
-public class internshiptable {
+public class InternshipEntity {
 
-    public internshiptable() {}
+    public InternshipEntity() {}
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String internships;
@@ -16,7 +18,7 @@ public class internshiptable {
     @Column(name = "\"programmingLanguage\"")
     private String programmingLanguage;
 
-    public internshiptable(String internships, String programmingLanguage) {
+    public InternshipEntity(String internships, String programmingLanguage) {
         this.internships = internships;
         this.programmingLanguage = programmingLanguage;
     }

@@ -1,0 +1,8 @@
+#! 0-upcominginternshipdisplayer2027-namespace.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: upcominginternshipdisplayer2027
+    labels:
+        com.docker.compose.project: upcominginternshipdisplayer2027
