@@ -1,4 +1,4 @@
-sqlCREATE TABLE IF NOT EXISTS internshipwebsites (
+CREATE TABLE IF NOT EXISTS internshipwebsites (
     id BIGINT NOT NULL AUTO_INCREMENT,
     internships VARCHAR(255),
     programmingLanguage VARCHAR(255),
